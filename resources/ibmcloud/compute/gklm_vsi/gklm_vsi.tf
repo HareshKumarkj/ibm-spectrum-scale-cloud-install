@@ -5,7 +5,8 @@
 terraform {
   required_providers {
     ibm = {
-      source = "IBM-Cloud/ibm"
+      source  = "IBM-Cloud/ibm"
+      version = "~> 2"
     }
   }
 }
@@ -24,22 +25,15 @@ variable "vsi_image_id" {}
 variable "vsi_user_public_key" {}
 variable "resource_group_id" {}
 variable "resource_tags" {}
-variable "vsi_meta_private_key" {}
-variable "vsi_meta_public_key" {}
 
-data "template_file" "metadata_startup_script" {
-  template = <<EOF
+locals {
+  metadata_startup_script = <<EOF
 #!/bin/bash
 echo "0 $(hostname) 0" > /home/klmdb411/sqllib/db2nodes.cfg
 systemctl start db2c_klmdb411.service
 sleep 10
 systemctl status db2c_klmdb411.service
 sleep 10
-#Copying SSH for passwordless authentication
-echo "${var.vsi_meta_private_key}" > ~/.ssh/id_rsa
-chmod 600 ~/.ssh/id_rsa
-echo "${var.vsi_meta_public_key}" >> ~/.ssh/authorized_keys
-echo "StrictHostKeyChecking no" >> ~/.ssh/config
 reboot
 EOF
 }
@@ -69,7 +63,7 @@ resource "ibm_is_instance" "itself" {
   zone           = each.value.zone
   resource_group = var.resource_group_id
   keys           = var.vsi_user_public_key
-  user_data      = data.template_file.metadata_startup_script.rendered
+  user_data      = local.metadata_startup_script
 
   boot_volume {
     name = format("%s-boot-%03s", var.vsi_name_prefix, each.value.sequence_string)
@@ -80,7 +74,7 @@ resource "ibm_dns_resource_record" "a_itself" {
   for_each = {
     for idx, count_number in range(1, var.total_vsis + 1) : idx => {
       name       = element(tolist([for name_details in ibm_is_instance.itself : name_details.name]), idx)
-      network_ip = element(tolist([for ip_details in ibm_is_instance.itself : ip_details.primary_network_interface[0]["primary_ipv4_address"]]), idx)
+      network_ip = element(tolist([for ip_details in ibm_is_instance.itself : ip_details.primary_network_interface[0].primary_ip[0].address]), idx)
     }
   }
 
@@ -97,7 +91,7 @@ resource "ibm_dns_resource_record" "ptr_itself" {
   for_each = {
     for idx, count_number in range(1, var.total_vsis + 1) : idx => {
       name       = element(tolist([for name_details in ibm_is_instance.itself : name_details.name]), idx)
-      network_ip = element(tolist([for ip_details in ibm_is_instance.itself : ip_details.primary_network_interface[0]["primary_ipv4_address"]]), idx)
+      network_ip = element(tolist([for ip_details in ibm_is_instance.itself : ip_details.primary_network_interface[0].primary_ip[0].address]), idx)
     }
   }
 

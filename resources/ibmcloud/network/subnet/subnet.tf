@@ -5,7 +5,8 @@
 terraform {
   required_providers {
     ibm = {
-      source = "IBM-Cloud/ibm"
+      source  = "IBM-Cloud/ibm"
+      version = "~> 2"
     }
   }
 }
@@ -17,15 +18,20 @@ variable "subnet_name" {}
 variable "subnets_cidr" {}
 variable "public_gateway" {}
 variable "resource_group_id" {}
+variable "tags" {
+  type    = list(string)
+  default = []
+}
 
 resource "ibm_is_subnet" "itself" {
-  count           = var.turn_on ? length(var.zones) : 0
+  count           = var.turn_on && length(var.subnets_cidr) > 0 ? length(var.zones) : 0
   name            = "${var.subnet_name}-${count.index + 1}"
   vpc             = var.vpc_id
   resource_group  = var.resource_group_id
   zone            = element(var.zones, count.index)
   ipv4_cidr_block = element(var.subnets_cidr, count.index)
   public_gateway  = element(var.public_gateway, count.index)
+  tags            = var.tags
 }
 
 output "subnet_id" {
