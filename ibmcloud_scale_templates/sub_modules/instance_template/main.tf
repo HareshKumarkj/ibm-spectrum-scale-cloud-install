@@ -76,6 +76,16 @@ module "scale_cluster_ingress_security_rule_using_direct_connection" {
       protocol = "tcp"
       port_min = 443
       port_max = 443
+    }],
+    [{
+      protocol = "tcp"
+      port_min = 57096
+      port_max = 57096
+    }],
+    [{
+      protocol = "tcp"
+      port_min = 46443
+      port_max = 46443
     }]
   )
 }
@@ -145,9 +155,10 @@ resource "ibm_is_ssh_key" "compute_ssh_key" {
 }
 
 resource "ibm_is_placement_group" "storage_cluster" {
-  count    = local.create_placement_group ? 1 : 0
-  name     = "${var.resource_prefix}-storage-placement-group"
-  strategy = var.placement_group_strategy
+  count          = local.create_placement_group ? 1 : 0
+  name           = "${var.resource_prefix}-storage-placement-group"
+  strategy       = var.placement_group_strategy
+  resource_group = var.resource_group_id
 }
 
 module "compute_cluster_instances" {
