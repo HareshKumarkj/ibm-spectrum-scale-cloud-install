@@ -54,11 +54,25 @@ variable "vpc_storage_cluster_dns_zone_id" {
   description = "DNS zone ID for storage cluster."
 }
 
+variable "vpc_storage_cluster_dns_domain" {
+  type        = string
+  nullable    = true
+  default     = null
+  description = "DNS domain name for storage cluster."
+}
+
 variable "vpc_compute_cluster_dns_zone_id" {
   type        = string
   nullable    = true
   default     = null
   description = "DNS zone ID for compute cluster."
+}
+
+variable "vpc_compute_cluster_dns_domain" {
+  type        = string
+  nullable    = true
+  default     = null
+  description = "DNS domain name for compute cluster."
 }
 
 variable "vpc_storage_cluster_private_subnets" {
@@ -258,7 +272,7 @@ variable "root_device_kms_key_name" {
   description = "Name of the root/standard key to be used when encrypting the root volume."
 }
 
-variable "orchestrator_server_url" {
+variable "orchestrator_server" {
   type        = string
   description = "IP or hostname of the scale-orchestrator server, e.g. 10.x.x.x. Injected as http://<value>:57096 into /etc/scale-agent/config.yaml on each VM at first boot."
 }

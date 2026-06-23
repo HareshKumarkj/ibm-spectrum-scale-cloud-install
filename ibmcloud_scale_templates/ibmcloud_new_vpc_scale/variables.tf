@@ -300,6 +300,12 @@ variable "peer_vpc_crn" {
   description = "CRN of the existing VPC to connect via Transit Gateway. Required only if enable_transit_gateway is true and creating a new Transit Gateway."
 }
 
+variable "peer_security_group_id" {
+  type        = string
+  default     = null
+  description = "ID of the security group in the peer VPC to attach connectivity rules to."
+}
+
 variable "transit_gateway_name" {
   type        = string
   default     = null
@@ -330,7 +336,7 @@ variable "tags" {
   description = "List of tags to be attached to all resources created by this module."
 }
 
-variable "orchestrator_server_url" {
+variable "orchestrator_server" {
   type        = string
   description = "IP or hostname of the scale-orchestrator server running on the OCP worker node, e.g. 10.x.x.x. Injected as http://<value>:57096 into /etc/scale-agent/config.yaml on each VM at first boot."
 }

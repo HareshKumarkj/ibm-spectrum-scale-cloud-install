@@ -9,11 +9,6 @@
     7. SSH key pairs for instance access
 */
 
-# Fetch all DNS zones to derive storage DNS domain from zone ID
-data "ibm_dns_zones" "storage_zones" {
-  instance_id = var.dns_service_instance_id
-}
-
 # Create cluster security group
 module "cluster_security_group" {
   source            = "../../../resources/ibmcloud/security/security_group"
@@ -76,11 +71,6 @@ module "scale_cluster_ingress_security_rule_using_direct_connection" {
       protocol = "tcp"
       port_min = 443
       port_max = 443
-    }],
-    [{
-      protocol = "tcp"
-      port_min = 57096
-      port_max = 57096
     }],
     [{
       protocol = "tcp"
@@ -165,8 +155,9 @@ module "compute_cluster_instances" {
   for_each                          = local.compute_vm_subnet_map
   source                            = "../../../resources/ibmcloud/compute/vsi_0_vol"
   ami_id                            = var.compute_cluster_image_id
-  dns_services_instance_id          = var.dns_service_instance_id
+  dns_service_instance_id           = var.dns_service_instance_id
   dns_zone_id                       = var.vpc_compute_cluster_dns_zone_id
+  dns_domain                        = var.vpc_compute_cluster_dns_domain
   instance_type                     = var.compute_cluster_instance_type
   name_prefix                       = each.key
   resource_group_id                 = var.resource_group_id
@@ -179,7 +170,7 @@ module "compute_cluster_instances" {
   ssh_key_id                        = try(ibm_is_ssh_key.compute_ssh_key[0].id, null)
   vpc_id                            = var.vpc_id
   zone                              = var.vpc_availability_zones
-  orchestrator_server_url           = var.orchestrator_server_url
+  orchestrator_server               = var.orchestrator_server
 }
 
 module "storage_cluster_instances" {
@@ -187,8 +178,9 @@ module "storage_cluster_instances" {
   source                            = "../../../resources/ibmcloud/compute/vsi_multiple_vol"
   ami_id                            = var.storage_cluster_image_id
   disks                             = each.value["disks"]
-  dns_services_instance_id          = var.dns_service_instance_id
+  dns_service_instance_id           = var.dns_service_instance_id
   dns_zone_id                       = var.vpc_storage_cluster_dns_zone_id
+  dns_domain                        = var.vpc_storage_cluster_dns_domain
   instance_type                     = var.storage_cluster_instance_type
   name_prefix                       = each.key
   resource_group_id                 = var.resource_group_id
@@ -203,7 +195,7 @@ module "storage_cluster_instances" {
   vpc_id                            = var.vpc_id
   zone                              = each.value["zone"]
   attach_volumes                    = false
-  orchestrator_server_url           = var.orchestrator_server_url
+  orchestrator_server               = var.orchestrator_server
 }
 
 module "storage_cluster_tie_breaker_instance" {
@@ -211,8 +203,9 @@ module "storage_cluster_tie_breaker_instance" {
   source                            = "../../../resources/ibmcloud/compute/vsi_multiple_vol"
   ami_id                            = var.storage_cluster_image_id
   disks                             = each.value["disks"]
-  dns_services_instance_id          = var.dns_service_instance_id
+  dns_service_instance_id           = var.dns_service_instance_id
   dns_zone_id                       = var.vpc_storage_cluster_dns_zone_id
+  dns_domain                        = var.vpc_storage_cluster_dns_domain
   instance_type                     = var.storage_cluster_tiebreaker_instance_type
   name_prefix                       = each.key
   resource_group_id                 = var.resource_group_id
@@ -227,15 +220,16 @@ module "storage_cluster_tie_breaker_instance" {
   vpc_id                            = var.vpc_id
   zone                              = each.value["zone"]
   attach_volumes                    = true
-  orchestrator_server_url           = var.orchestrator_server_url
+  orchestrator_server               = var.orchestrator_server
 }
 
 module "protocol_instances" {
   for_each                          = local.protocol_vm_subnet_map
   source                            = "../../../resources/ibmcloud/compute/vsi_ip_fwd"
   ami_id                            = var.storage_cluster_image_id
-  dns_services_instance_id          = var.dns_service_instance_id
+  dns_service_instance_id           = var.dns_service_instance_id
   dns_zone_id                       = var.vpc_storage_cluster_dns_zone_id
+  dns_domain                        = var.vpc_storage_cluster_dns_domain
   instance_type                     = var.protocol_instance_type
   name_prefix                       = each.key
   resource_group_id                 = var.resource_group_id
@@ -255,8 +249,9 @@ module "gateway_instances" {
   for_each                          = local.gateway_vm_subnet_map
   source                            = "../../../resources/ibmcloud/compute/vsi_0_vol"
   ami_id                            = var.storage_cluster_image_id
-  dns_services_instance_id          = var.dns_service_instance_id
+  dns_service_instance_id           = var.dns_service_instance_id
   dns_zone_id                       = var.vpc_storage_cluster_dns_zone_id
+  dns_domain                        = var.vpc_storage_cluster_dns_domain
   instance_type                     = var.gateway_instance_type
   name_prefix                       = each.key
   resource_group_id                 = var.resource_group_id
@@ -269,5 +264,5 @@ module "gateway_instances" {
   ssh_key_id                        = try(ibm_is_ssh_key.storage_ssh_key[0].id, null)
   vpc_id                            = var.vpc_id
   zone                              = var.vpc_availability_zones
-  orchestrator_server_url           = var.orchestrator_server_url
+  orchestrator_server               = var.orchestrator_server
 }

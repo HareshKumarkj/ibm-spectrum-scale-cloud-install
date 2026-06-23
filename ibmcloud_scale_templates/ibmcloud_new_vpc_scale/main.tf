@@ -63,6 +63,7 @@ module "vpc_peering" {
   vpc_region                     = var.vpc_region
   vpc_crn                        = module.vpc.vpc_crn
   peer_vpc_crn                   = var.peer_vpc_crn
+  peer_security_group_id         = var.peer_security_group_id
   resource_prefix                = var.resource_prefix
   resource_group_id              = module.vpc.resource_group_id
   transit_gateway_name           = var.transit_gateway_name
@@ -85,7 +86,9 @@ module "scale_instances" {
   vpc_compute_cluster_private_subnets      = coalescelist(module.vpc.vpc_compute_cluster_private_subnets, module.vpc.vpc_storage_cluster_private_subnets)
   dns_service_instance_id                  = module.dns.dns_service_instance_id
   vpc_storage_cluster_dns_zone_id          = module.dns.vpc_storage_dns_zone_id
+  vpc_storage_cluster_dns_domain           = module.dns.vpc_storage_dns_domain
   vpc_compute_cluster_dns_zone_id          = module.dns.vpc_compute_dns_zone_id
+  vpc_compute_cluster_dns_domain           = module.dns.vpc_compute_dns_domain
   total_storage_cluster_instances          = var.total_storage_cluster_instances
   storage_cluster_image_id                 = var.storage_vsi_osimage_id
   storage_cluster_instance_type            = var.storage_vsi_profile
@@ -116,5 +119,5 @@ module "scale_instances" {
   airgap                                   = false
   enable_placement_group                   = var.enable_placement_group
   placement_group_strategy                 = var.placement_group_strategy
-  orchestrator_server_url                  = var.orchestrator_server_url
+  orchestrator_server                      = var.orchestrator_server
 }
