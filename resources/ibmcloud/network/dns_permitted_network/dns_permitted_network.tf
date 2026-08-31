@@ -12,7 +12,9 @@ terraform {
 */
 
 
-variable "permitted_count" {}
+variable "permitted_count" {
+  type = number
+}
 variable "instance_id" {}
 variable "zone_id" {}
 variable "vpc_crn" {}

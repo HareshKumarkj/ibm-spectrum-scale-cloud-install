@@ -59,12 +59,14 @@ data "ibm_is_vpc" "vpc" {
   identifier = var.vpc_ref
 }
 
-# Creates a DNS permitted network for each enabled cluster type, associating the VPC with its zone
+# Creates a DNS permitted network for each enabled cluster type, associating the VPC with its zone.
+# permitted_count is derived from var.create_dns_zone (a known input) so that the count value
+# is always resolvable at plan time without depending on data source results.
 module "dns_permitted_network" {
   for_each        = local.enabled_dns_zone_configs
   source          = "../../../resources/ibmcloud/network/dns_permitted_network"
-  permitted_count = (var.create_dns_zone || each.value.exists) ? 1 : 0
+  permitted_count = var.create_dns_zone ? 1 : (each.value.existing_id != null ? 1 : 0)
   instance_id     = local.dns_instance_id
-  zone_id         = each.value.exists ? each.value.existing_id : module.dns_zone[each.key].dns_zone_id
+  zone_id         = each.value.existing_id != null ? each.value.existing_id : module.dns_zone[each.key].dns_zone_id
   vpc_crn         = one(data.ibm_is_vpc.vpc[*].crn)
 }

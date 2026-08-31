@@ -205,7 +205,7 @@ variable "storage_volume_mbps" {
   description = "Throughput (Mbps) per attached storage volume. Used to compute storage_vol_bandwidth when not explicitly set: storage_vol_bandwidth = (vols_per_vsi * storage_volume_mbps) + 393. Leave null to use IBM Cloud's default bandwidth allocation."
 
   validation {
-    condition     = var.storage_volume_mbps == null || var.storage_volume_mbps >= 1
+    condition     = var.storage_volume_mbps == null ? true : var.storage_volume_mbps >= 1
     error_message = "storage_volume_mbps must be a positive integer or null."
   }
 }
