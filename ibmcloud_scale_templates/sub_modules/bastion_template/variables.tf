@@ -8,22 +8,12 @@ variable "bastion_image_ref" {
   type        = string
   default     = null
   description = "IBM Cloud image ID for the bastion instance. Required when enable_bastion is true."
-
-  validation {
-    condition     = !var.enable_bastion || var.bastion_image_ref != null
-    error_message = "bastion_image_ref is required when enable_bastion is true."
-  }
 }
 
 variable "bastion_instance_type" {
   type        = string
   default     = null
   description = "Instance type to use for the bastion instance. Required when enable_bastion is true."
-
-  validation {
-    condition     = !var.enable_bastion || var.bastion_instance_type != null
-    error_message = "bastion_instance_type is required when enable_bastion is true."
-  }
 }
 
 variable "bastion_public_key" {
